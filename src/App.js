@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import axios from "./axios/axios-flickr";
+
+import Spinner from "./components/UI/Spinner/Spinner";
+
 class App extends Component {
 
   state = {
@@ -33,7 +36,7 @@ class App extends Component {
   render() {
     let photos = null;
     if(this.state.isLoading) {
-      photos = "Loading..."
+      photos = <Spinner />
     } else {
       photos = "Loaded"
     }
@@ -41,7 +44,7 @@ class App extends Component {
     return (
       <div>
         <p>Flickr App</p> 
-        <p>{ photos }</p>
+        { photos }
       </div>
     );
   }
