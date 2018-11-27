@@ -44,12 +44,18 @@ class App extends Component {
 
     return (
       <div>
-        <div>
-          <Input changed={ (event) => console.log(event.target.value)}/>
-          <Button type="Success" clicked={ () => console.log("clicked")}>Search</Button>
-        </div>
-
-        <p>Flickr App</p> 
+        <h3>flickr</h3> 
+        <div className="d-flex flex-row">
+          <div className="d-flex flex-fill">
+            <Input changed={ (event) => console.log(event.target.value)}/>  
+            <div className="ml-2">
+              <Button type="Success" clicked={ () => console.log("clicked")}>Search</Button>
+            </div>          
+          </div>
+          <div className="d-flex flex-fill">
+          
+          </div>
+        </div> 
         { photos }
       </div>
     );
