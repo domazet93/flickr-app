@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import axios from "./axios/axios-flickr";
 
 import Spinner from "./components/UI/Spinner/Spinner";
+import Input from "./components/UI/Input/Input";
 
 class App extends Component {
 
@@ -43,6 +44,7 @@ class App extends Component {
 
     return (
       <div>
+        <Input />
         <p>Flickr App</p> 
         { photos }
       </div>
