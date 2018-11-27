@@ -1,0 +1,23 @@
+@import  "../../../style/variables.scss";
+@import  "../../../style/mixins.scss";
+
+.Button {
+  @include border-radius(3px);
+
+  font: inherit;
+  cursor: pointer;
+  height: 35px;
+  border: none;
+  outline: none;
+  color: $white;
+  &:disabled {
+    opacity: .6;
+    cursor: not-allowed;    
+  }
+}
+.Success {
+  background: $btn-success-color;
+}
+.Danger {
+  background: $btn-danger-color;
+}

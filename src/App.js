@@ -3,7 +3,7 @@ import axios from "./axios/axios-flickr";
 
 import Spinner from "./components/UI/Spinner/Spinner";
 import Input from "./components/UI/Input/Input";
-
+import Button from "./components/UI/Button/Button";
 class App extends Component {
 
   state = {
@@ -44,7 +44,11 @@ class App extends Component {
 
     return (
       <div>
-        <Input />
+        <div>
+          <Input changed={ (event) => console.log(event.target.value)}/>
+          <Button type="Success" clicked={ () => console.log("clicked")}>Search</Button>
+        </div>
+
         <p>Flickr App</p> 
         { photos }
       </div>
