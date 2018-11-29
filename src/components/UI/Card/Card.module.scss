@@ -1,0 +1,7 @@
+@import  "../../../style/variables.scss";
+@import  "../../../style/mixins.scss";
+
+.Card {
+  flex-basis: 50%;
+  img { width: 100%; }
+}
