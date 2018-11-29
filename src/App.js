@@ -4,27 +4,34 @@ import axios from "./axios/axios-flickr";
 import Spinner from "./components/UI/Spinner/Spinner";
 import Input from "./components/UI/Input/Input";
 import Button from "./components/UI/Button/Button";
+import Card from "./components/UI/Card/Card";
+
 class App extends Component {
 
   state = {
     isLoading: false,
-    photos: {}
+    gallery: []
   }
 
   componentDidMount() { 
-    this.setState({ isLoading: true, pictures: [] }, () => {
+    this.setState({ isLoading: true, photos: {} }, () => {
       axios
         .get("/", {
           params: {
             method: "flickr.photos.getRecent",
             format: "json",
+            per_page: 20,
             nojsoncallback: 1,
             api_key: process.env.REACT_APP_API_KEY
           }
         })
-        .then(res => {
+        .then((res) => {
           this.setState({
-            photos: res.data.photos
+            gallery: res.data.photos.photo
+          }, async () => {          
+            let gallery = await this.doSomething()
+            this.setState({ gallery })
+            console.log(gallery)
           })
         })
         .catch(error => null)
@@ -34,13 +41,44 @@ class App extends Component {
     });
   }
 
+  doSomething = () => {
+    let gallery =  [ ...this.state.gallery ]
+    let promises = gallery.map(async (photo) => ({
+      ...photo,
+      person: await this.getOwner(photo)
+    })) ;
+    return Promise.all(promises);
+  }
+
+  getOwner = (photo) => {
+    return axios
+    .get("/", {
+      params: {
+        method: "flickr.people.getInfo",
+        format: "json",
+        user_id: photo.owner,
+        nojsoncallback: 1,
+        api_key: process.env.REACT_APP_API_KEY
+      }
+    })
+  }
+
   render() {
-    let photos = null;
-    if(this.state.isLoading) {
-      photos = <Spinner />
-    } else {
-      photos = "Loaded"
-    }
+    let gallery = <Spinner />
+
+    if(!this.state.isLoading) {
+      gallery = this.state.gallery.length ? (
+        this.state.gallery.map((photo, $index) => (
+          <Card key={$index}
+                title={photo.title}
+                image={`http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}
+                desc="desc"/>
+
+        ))
+      ) : (
+        <p>No Data</p>
+      );
+    } 
 
     return (
       <div>
@@ -56,8 +94,10 @@ class App extends Component {
           
           </div>
         </div> 
-        { photos }
-      </div>
+        <div className="d-flex flex-wrap">
+          { gallery }
+        </div>
+      </div> 
     );
   }
 }

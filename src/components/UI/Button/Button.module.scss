@@ -2,6 +2,7 @@
 @import  "../../../style/mixins.scss";
 
 .Button {
+  min-width: 100px;
   @include border-radius(3px);
 
   font: inherit;
