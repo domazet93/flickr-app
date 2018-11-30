@@ -1,38 +1,30 @@
 import React, { Component } from 'react';
-import axios from "./axios/axios-flickr";
 
 import Spinner from "./components/UI/Spinner/Spinner";
 import Input from "./components/UI/Input/Input";
 import Button from "./components/UI/Button/Button";
 import Card from "./components/UI/Card/Card";
 
+import FlickService from "./services/api/flickr.service"
+
 class App extends Component {
 
   state = {
     isLoading: false,
-    gallery: []
+    gallery: [],  
+    description: ""
   }
 
   componentDidMount() { 
     this.setState({ isLoading: true, photos: {} }, () => {
-      axios
-        .get("/", {
-          params: {
-            method: "flickr.photos.getRecent",
-            format: "json",
-            per_page: 20,
-            nojsoncallback: 1,
-            api_key: process.env.REACT_APP_API_KEY
-          }
-        })
+        this.getRecentPhotoAPI()
         .then((res) => {
           this.setState({
             gallery: res.data.photos.photo
           }, async () => {          
-            let gallery = await this.doSomething()
-            this.setState({ gallery })
-            console.log(gallery)
-          })
+            let gallery = await this.getGalleryWithOwnersInfo()
+            this.setState({ gallery }); 
+          }); 
         })
         .catch(error => null)
         .finally(() => {
@@ -41,26 +33,67 @@ class App extends Component {
     });
   }
 
-  doSomething = () => {
+  handleQueryChange = event => {
+    this.setState({ description: event.target.value })    
+  };
+
+  handleQueryKeyPress = event => {
+    if (event.key === 'Enter') {
+      this.handleQueryEvent()
+    }      
+  };
+
+  handleQueryEvent = () => {
+    this.getPhotosAPI()
+    .then((res) => {
+      this.setState({
+        gallery: res.data.photos.photo
+      }, async () => {          
+        let gallery = await this.getGalleryWithOwnersInfo()
+        this.setState({ gallery }); 
+      });
+    })
+    .catch(error => null)
+    .finally(() => {
+      this.setState({ isLoading: false });
+    });
+  }
+
+  getGalleryWithOwnersInfo = () => {
     let gallery =  [ ...this.state.gallery ]
     let promises = gallery.map(async (photo) => ({
       ...photo,
-      person: await this.getOwner(photo)
+      person: await this.getPersonInfoAPI(photo)
     })) ;
     return Promise.all(promises);
   }
 
-  getOwner = (photo) => {
-    return axios
-    .get("/", {
+  getRecentPhotoAPI = () => {
+    return FlickService
+    .getRecentPhotos("/", {
       params: {
-        method: "flickr.people.getInfo",
-        format: "json",
-        user_id: photo.owner,
-        nojsoncallback: 1,
-        api_key: process.env.REACT_APP_API_KEY
+        per_page: 20
       }
     })
+  }
+
+  getPhotosAPI = () => {
+    return FlickService
+    .getPhotos("/", {
+      params: {
+        per_page: 20,
+        tags: this.state.description
+      }
+    })
+  }
+
+  getPersonInfoAPI = (photo) => {
+    return FlickService
+      .getPeopleInfo("/", {
+        params: {
+          user_id: photo.owner
+        }
+      });      
   }
 
   render() {
@@ -85,9 +118,10 @@ class App extends Component {
         <h3>flickr</h3> 
         <div className="d-flex flex-row">
           <div className="d-flex flex-fill">
-            <Input changed={ (event) => console.log(event.target.value)}/>  
+            <Input changed={ this.handleQueryChange }
+                    keypress={ this.handleQueryKeyPress } />  
             <div className="ml-2">
-              <Button type="Success" clicked={ () => console.log("clicked")}>Search</Button>
+              <Button type="Success" clicked={ this.handleQueryEvent }>Search</Button>
             </div>          
           </div>
           <div className="d-flex flex-fill">
