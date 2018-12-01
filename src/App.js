@@ -5,7 +5,7 @@ import Spinner from "./components/UI/Spinner/Spinner";
 import Input from "./components/UI/Input/Input";
 import Button from "./components/UI/Button/Button";
 import Card from "./components/UI/Card/Card";
-
+import NoData from "./components/UI/NoData/NoData"
 import FlickService from "./services/api/flickr.service"
 
 class App extends Component {
@@ -114,7 +114,7 @@ class App extends Component {
         
         ))
       ) : (
-        <p>No Data</p>
+        <NoData />
       );
     } 
 

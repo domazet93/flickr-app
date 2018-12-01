@@ -1,0 +1,12 @@
+@import "../../../style/variables.scss";
+@import  "../../../style/mixins.scss";
+
+.NoData {
+  @include border-radius(3px);
+
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  background: $secondary_color;
+  color: $white;
+}
