@@ -15,8 +15,9 @@ class App extends Component {
   state = {
     isLoading: false,
     gallery: [],  
-    description: "",
-    hasMore: true
+    tags: "",
+    hasMorePictures: true,
+    page: 1
   }
 
   componentDidMount() { 
@@ -31,8 +32,8 @@ class App extends Component {
         this.setState({
           gallery: res.data.photos.photo
         }, async () => {          
-          let gallery = await this.getGalleryWithOwnersInfo()
-          this.setState({ gallery }); 
+          let gallery = await this.getGalleryWithOwnersInfo(this.state.gallery)
+          this.setState({ gallery, page:  res.data.photos.page + 1 }); 
         }); 
       })
       .catch(error => null)
@@ -42,35 +43,36 @@ class App extends Component {
   }
 
   loadMorePhotos = () => {
-      this.getPhotosAPI()
-      .then((res) => {
-        this.setState({
-          gallery: res.data.photos.photo
-        }, async () => {          
-          let gallery = await this.getGalleryWithOwnersInfo()
-          let result = [ ...this.state.gallery, ...gallery]
-          this.setState({ gallery: result, hasMore: true }); 
-        });
+      var page = this.state.page;
+      this.setState(({ page: page + 1, hasMorePictures: false }), () => {
+        this.getPhotosAPI()
+        .then(async (res) => {
+          let newPhotos = await this.getGalleryWithOwnersInfo(res.data.photos.photo)
+          let gallery = [ ...this.state.gallery, ...newPhotos ];
+          this.setState({ 
+            hasMorePictures: true, 
+            gallery
+          }); 
+        })
+        .catch(error => null)
       })
-      .catch(error => null)
   }
 
   handleQueryChange = event => {
-    this.setState({ description: event.target.value })    
+    this.setState({ tags: event.target.value })    
   };
 
   handleQueryKeyPress = event => {
-    if (event.key === 'Enter' && this.state.description) {
+    if (event.key === 'Enter' && this.state.tags) {
       this.getPhotos()
     }      
   };
 
-  getGalleryWithOwnersInfo = () => {
-    let gallery =  [ ...this.state.gallery ]
+  getGalleryWithOwnersInfo = (gallery) => {
     let promises = gallery.map(async (photo) => ({
       ...photo,
       person: await this.getPersonInfoAPI(photo)
-    })) ;
+    }));
     return Promise.all(promises);
   }
 
@@ -78,8 +80,9 @@ class App extends Component {
     return FlickService
     .getPhotos("/", {
       params: {
+        page: this.state.page,
         per_page: 20,
-        tags: this.state.description
+        tags: this.state.tags
       }
     })
   }
@@ -98,21 +101,23 @@ class App extends Component {
 
     if(!this.state.isLoading) {
       gallery = this.state.gallery.length ? (
-        this.state.gallery.map((photo, $index) => (
-        <div className={ "flex-lg-3 flex-md-6 flex-xs-1 m-2" } key={$index}>
-          <Card 
-            key={$index}       
-            title={photo.title}
-            image={`http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}
-            desc="desc"/>
+        <div className={classes.Card}>
+          {this.state.gallery.map((photo, $index) => {
+            if(!photo.id) { return false; }
+            return (
+              <div className={ "flex-lg-3 flex-md-6 flex-xs-1 m-2"  } key={$index}>
+                <Card  
+                  key={$index}       
+                  title={photo.title}
+                  image={`http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}
+                  desc="desc"/>
+              </div>)
+            })}
         </div>
-        
-        ))
       ) : (
         <NoData />
       );
     } 
-
     return (
       <div>
         <h3>flickr</h3> 
@@ -124,7 +129,7 @@ class App extends Component {
             <div className="ml-2">
               <Button 
                   type="Success" 
-                  isDisabled={!this.state.description} 
+                  isDisabled={!this.state.tags} 
                   clicked={ this.getPhotos }>Search</Button>
             </div>          
           </div>
@@ -132,14 +137,14 @@ class App extends Component {
           
           </div>
         </div> 
-        <div className="d-flex flex-wrap justify-content-center">   
+        <div className="d-flex flex-wrap">   
           <InfiniteScroll 
               initialLoad={false}
               className={`${classes.App} mt-3`}
-              hasMore={this.state.hasMore}
+              hasMore={this.state.hasMorePictures}
               pageStart={0}
               loadMore={this.loadMorePhotos}>
-            {gallery} 
+            { gallery } 
           </InfiniteScroll>
         </div>
       </div> 
