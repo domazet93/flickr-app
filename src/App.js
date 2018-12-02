@@ -45,10 +45,10 @@ class App extends Component {
         });      
     });
   }
-
+  
   loadMorePhotos = () => {
       var page = this.state.page;
-      this.setState(({ page: page + 1, hasMorePictures: false }), () => {
+      this.setState(({ page: page + 1 }), () => {
         this.getPhotosAPI()
         .then(async (res) => {
           let galleryWithOwners = await this.getGalleryWithOwnersInfo(res.data.photos.photo);
@@ -129,7 +129,7 @@ class App extends Component {
     if(!this.state.isLoading) {
       gallery = this.state.gallery.length ? (
         <div className={classes.Card}>
-          {this.state.gallery.map((photo, $index) => {
+          { this.state.gallery.map((photo, $index) => {
             return (
               <div className={ "flex-lg-3 flex-md-6 flex-xs-1 m-2"  } key={$index}>
                 <Card  
@@ -150,10 +150,19 @@ class App extends Component {
               </div>) 
             })}
         </div>
-      ) : (
-        <NoData />
-      );
-    } 
+      ) : null;
+
+      gallery ? gallery = (<InfiniteScroll 
+                      initialLoad={false}
+                      className={`${classes.App} mt-3`}
+                      hasMore={this.state.hasMorePictures}
+                      pageStart={0}
+                      loader={  <Spinner key="loadMore" /> }
+                      loadMore={this.loadMorePhotos}>
+                    { gallery } 
+                  </InfiniteScroll>) : gallery = (<NoData />)
+      
+    }
     return (
       <div>
         <h3>flickr</h3> 
@@ -171,15 +180,8 @@ class App extends Component {
           </div>
           <div className="d-flex flex-fill justify-content-end"></div>
         </div> 
-        <div className="d-flex flex-wrap">   
-          <InfiniteScroll 
-              initialLoad={false}
-              className={`${classes.App} mt-3`}
-              hasMore={this.state.hasMorePictures}
-              pageStart={0}
-              loadMore={this.loadMorePhotos}>
-            { gallery } 
-          </InfiniteScroll>
+        <div className="d-flex flex-wrap mt-4">   
+         { gallery }
         </div>
       </div> 
     );
