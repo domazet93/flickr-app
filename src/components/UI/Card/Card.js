@@ -8,7 +8,7 @@ import CardActions from "./CardActions/CardActions";
 
 const card = props => {
   return ( 
-    <div className={classes.Card}>
+    <div className={`${classes.Card} d-flex flex-column`} >
       <CardTitle title={props.title} /> 
       <CardMedia image={props.image} link={props.link}/>
       <CardDesc desc={props.desc}>{props.children}</CardDesc>
