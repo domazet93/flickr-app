@@ -62,8 +62,8 @@
     "start": "node scripts/start.js --env-file=.env",
     "build": "node scripts/build.js", 
     "test": "node scripts/test.js",
-    "heroku-postbuild": "npm run build"
-  },
+    "heroku-postbuild": "node scripts/build.js"
+  }, 
   "eslintConfig": {
     "extends": "react-app" 
   },
