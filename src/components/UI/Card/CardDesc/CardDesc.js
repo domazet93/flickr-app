@@ -1,11 +1,11 @@
 import React from "react";
-
+import Aux from "../../../../hoc/Aux/Aux"
 const cardDesc = props => {
   return (
-    <div>
+    <Aux>
       <p>{props.desc}</p>
       {props.children}
-    </div>
+    </Aux>
   )
 };
 
