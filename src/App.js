@@ -10,6 +10,12 @@ import Button from "./components/UI/Button/Button";
 import Card from "./components/UI/Card/Card";
 import NoData from "./components/UI/NoData/NoData"
 
+
+import { Icon } from 'react-icons-kit'
+import { user } from 'react-icons-kit/icomoon/user'
+import { priceTag } from 'react-icons-kit/icomoon/priceTag'
+import { calendar } from 'react-icons-kit/icomoon/calendar'
+
 class App extends Component {
 
   state = {
@@ -130,12 +136,15 @@ class App extends Component {
                   title={photo.title}
                   link={photo.info.urls.url[0]._content}
                   image={`http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}> 
-                  { photo.person.username._content } <br />
-                  {photo.info.dates.taken } <br />
-                  { photo.info.tags.tag.map((tag) => { return (
-                    <span class="mr-1" key={tag.id}>{tag._content}</span>
-                    ) }) 
-                  } 
+                  <Icon className="mr-2" size={14} icon={ user } /> { photo.person.username._content } <br />
+                  <Icon className="mr-2 mt-1" size={14} icon={ calendar } /> { photo.info.dates.taken } <br />
+                  <div class="d-flex flex-wrap mt-1">
+                    <Icon className="mr-2" size={14} icon={ priceTag } /> 
+                    { photo.info.tags.tag.map((tag) => { return (
+                        <span className="mr-1" key={tag.id}>{tag._content}</span>
+                      )}) 
+                    } 
+                  </div>
                 </Card>
               </div>) 
             })}
@@ -159,9 +168,7 @@ class App extends Component {
                   clicked={ this.getPhotos }>Search</Button>
             </div>          
           </div>
-          <div className="d-flex flex-fill">
-          
-          </div>
+          <div className="d-flex flex-fill justify-content-end"></div>
         </div> 
         <div className="d-flex flex-wrap">   
           <InfiniteScroll 
