@@ -10,8 +10,8 @@ const card = props => {
   return ( 
     <div className={classes.Card}>
       <CardTitle title={props.title} /> 
-      <CardMedia image={props.image} />
-      <CardDesc desc={props.desc} />
+      <CardMedia image={props.image} link={props.link}/>
+      <CardDesc desc={props.desc}>{props.children}</CardDesc>
       <CardActions></CardActions>
     </div>
   );

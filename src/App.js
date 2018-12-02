@@ -21,25 +21,22 @@ class App extends Component {
   }
 
   componentDidMount() { 
-    this.setState({ isLoading: true }, () => {
-      this.getPhotos()
-    });
+    this.getPhotos();
   }
 
   getPhotos = () => {   
-    this.getPhotosAPI()
-      .then((res) => {
-        this.setState({
-          gallery: res.data.photos.photo
-        }, async () => {          
-          let gallery = await this.getGalleryWithOwnersInfo(this.state.gallery)
-          this.setState({ gallery, page:  res.data.photos.page + 1 }); 
-        }); 
-      })
-      .catch(error => null)
-      .finally(() => {
-        this.setState({ isLoading: false });
-      });
+    this.setState({ isLoading: true, page: 1 }, () => { 
+      this.getPhotosAPI()
+        .then(async (res) => {
+          let galleryWithOwners = await this.getGalleryWithOwnersInfo(res.data.photos.photo);
+          let gallery  = await this.getPhotoInfo(galleryWithOwners)
+          this.setState({ gallery, page: res.data.photos.page + 1 }); 
+        })
+        .catch(error => null)
+        .finally(() => {
+          this.setState({ isLoading: false });
+        });      
+    });
   }
 
   loadMorePhotos = () => {
@@ -47,8 +44,10 @@ class App extends Component {
       this.setState(({ page: page + 1, hasMorePictures: false }), () => {
         this.getPhotosAPI()
         .then(async (res) => {
-          let newPhotos = await this.getGalleryWithOwnersInfo(res.data.photos.photo)
+          let galleryWithOwners = await this.getGalleryWithOwnersInfo(res.data.photos.photo);
+          let newPhotos  = await this.getPhotoInfo(galleryWithOwners)
           let gallery = [ ...this.state.gallery, ...newPhotos ];
+          
           this.setState({ 
             hasMorePictures: true, 
             gallery
@@ -69,10 +68,22 @@ class App extends Component {
   };
 
   getGalleryWithOwnersInfo = (gallery) => {
-    let promises = gallery.map(async (photo) => ({
-      ...photo,
-      person: await this.getPersonInfoAPI(photo)
-    }));
+    let promises = gallery.map(async (photo) => {
+      let response = await this.getPersonInfoAPI(photo)
+      return {
+        ...photo,
+        person: response.data.person
+    }});
+    return Promise.all(promises);
+  }
+
+  getPhotoInfo = (gallery) => {
+    let promises = gallery.map(async (photo) => {
+      let response = await this.getPhotoInfoAPI(photo)
+      return {
+        ...photo,
+        info: response.data.photo
+    }});
     return Promise.all(promises);
   }
 
@@ -96,6 +107,15 @@ class App extends Component {
       });      
   }
 
+  getPhotoInfoAPI = (photo) => {
+    return FlickService
+      .getPhotoInfo("/", {
+        params: {
+          photo_id: photo.id
+        }
+      });      
+  }
+
   render() {
     let gallery = <Spinner />
 
@@ -103,15 +123,21 @@ class App extends Component {
       gallery = this.state.gallery.length ? (
         <div className={classes.Card}>
           {this.state.gallery.map((photo, $index) => {
-            if(!photo.id) { return false; }
             return (
               <div className={ "flex-lg-3 flex-md-6 flex-xs-1 m-2"  } key={$index}>
                 <Card  
                   key={$index}       
                   title={photo.title}
-                  image={`http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}
-                  desc="desc"/>
-              </div>)
+                  link={photo.info.urls.url[0]._content}
+                  image={`http://farm${photo.farm}.staticflickr.com/${photo.server}/${photo.id}_${photo.secret}.jpg`}> 
+                  { photo.person.username._content } <br />
+                  {photo.info.dates.taken } <br />
+                  { photo.info.tags.tag.map((tag) => { return (
+                    <span class="mr-1" key={tag.id}>{tag._content}</span>
+                    ) }) 
+                  } 
+                </Card>
+              </div>) 
             })}
         </div>
       ) : (

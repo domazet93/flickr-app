@@ -41,10 +41,23 @@ function getPhotos(url, params) {
   });
 }
 
+function getPhotoInfo(url, params) {
+  return flickrInstance({
+    method: "GET", 
+    params: {
+      ...params.params,
+      method: "flickr.photos.getInfo",
+      format: "json",
+      nojsoncallback: 1,
+      api_key: process.env.REACT_APP_API_KEY
+    }
+  });
+}
 const FlickService = {
   getRecentPhotos, 
   getPeopleInfo,
-  getPhotos
+  getPhotos,
+  getPhotoInfo
 }
 
 export default FlickService;
